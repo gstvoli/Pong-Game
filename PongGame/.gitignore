@@ -1,0 +1,21 @@
+# Build / bin / obj folders
+bin/
+obj/
+
+# Visual Studio Code settings
+.vscode/
+
+# User-specific files
+*.user
+*.suo
+
+# MonoGame pipeline tool artifacts
+*.mgcb
+*.xnb
+
+# Logs
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db

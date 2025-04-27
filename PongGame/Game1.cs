@@ -51,12 +51,17 @@ public class Game1 : Game
         KeyboardState kState = Keyboard.GetState();
 
         //Movimentação do player 1 (W e S)
-        if (kState.IsKeyDown(Keys.W)) _player1.Y -= 5;
-        if (kState.IsKeyDown(Keys.S)) _player1.Y += 5;
+        if (kState.IsKeyDown(Keys.W) && _player1.Y > 0)
+            _player1.Y -= 5;
+
+        if (kState.IsKeyDown(Keys.S) && (_player1.Y + _player1.Height) < _graphics.PreferredBackBufferHeight)
+            _player1.Y += 5;
 
         //Movimentação do player 2 (Setas)
-        if (kState.IsKeyDown(Keys.Up)) _player2.Y -= 5;
-        if (kState.IsKeyDown(Keys.Down)) _player2.Y += 5;
+        if (kState.IsKeyDown(Keys.Up) && _player2.Y > 0)
+            _player2.Y -= 5;
+        if (kState.IsKeyDown(Keys.Down) && (_player2.Y + _player2.Height) < _graphics.PreferredBackBufferHeight)
+            _player2.Y += 5;
 
         //Atualiza a posição da bola
         _ball.X += (int)_ballVelocity.X;

@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -12,7 +13,11 @@ public class Game1 : Game
     private Texture2D _rectangleTexture;
     private Rectangle _player1, _player2, _ball;
     private Vector2 _ballVelocity;
-
+    private float _player1Velocity = 0f;
+    private float _player2Velocity = 0f;
+    private const float Acceleration = 0.5f;
+    private const float MaxSpeed = 5f;
+    private const float Friction = 0.2f;
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -51,17 +56,39 @@ public class Game1 : Game
         KeyboardState kState = Keyboard.GetState();
 
         //Movimentação do player 1 (W e S)
-        if (kState.IsKeyDown(Keys.W) && _player1.Y > 0)
-            _player1.Y -= 5;
-
-        if (kState.IsKeyDown(Keys.S) && (_player1.Y + _player1.Height) < _graphics.PreferredBackBufferHeight)
-            _player1.Y += 5;
+        if (kState.IsKeyDown(Keys.W))
+            _player1Velocity -= Acceleration;
+        else if (kState.IsKeyDown(Keys.S))
+            _player1Velocity += Acceleration;
+        else
+        {
+            if (_player1Velocity > 0)
+                _player1Velocity -= Friction;
+            else if (_player1Velocity < 0)
+                _player1Velocity += Friction;
+        }
 
         //Movimentação do player 2 (Setas)
-        if (kState.IsKeyDown(Keys.Up) && _player2.Y > 0)
-            _player2.Y -= 5;
-        if (kState.IsKeyDown(Keys.Down) && (_player2.Y + _player2.Height) < _graphics.PreferredBackBufferHeight)
-            _player2.Y += 5;
+        if (kState.IsKeyDown(Keys.Up))
+            _player2Velocity -= Acceleration;
+        else if (kState.IsKeyDown(Keys.Down))
+            _player2Velocity += Acceleration;
+        else
+        {
+            if (_player2Velocity > 0)
+                _player2Velocity -= Friction;
+            else if (_player2Velocity < 0)
+                _player2Velocity += Friction;
+        }
+
+        _player1Velocity = MathHelper.Clamp(_player1Velocity, -MaxSpeed, MaxSpeed);
+        _player2Velocity = MathHelper.Clamp(_player2Velocity, -MaxSpeed, MaxSpeed);
+
+        _player1.Y += (int)_player1Velocity;
+        _player2.Y += (int)_player2Velocity;
+
+        _player1.Y = MathHelper.Clamp(_player1.Y, 0, _graphics.PreferredBackBufferHeight - _player1.Height);
+        _player2.Y = MathHelper.Clamp(_player2.Y, 0, _graphics.PreferredBackBufferHeight - _player2.Height);
 
         //Atualiza a posição da bola
         _ball.X += (int)_ballVelocity.X;

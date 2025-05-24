@@ -18,6 +18,12 @@ public class Game1 : Game
     private const float Acceleration = 0.5f;
     private const float MaxSpeed = 5f;
     private const float Friction = 0.2f;
+    private int _scorePlayer1 = 0;
+    private int _scorePlayer2 = 0;
+    private SpriteFont _font;
+    private double _restartTimer = 0;
+    private bool _waitingToRestart = false;
+
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -45,6 +51,7 @@ public class Game1 : Game
         // Criando uma textura branca 1x1 para desenhar retângulos
         _rectangleTexture = new Texture2D(GraphicsDevice, 1, 1);
         _rectangleTexture.SetData(new[] { Color.White });
+        _font = Content.Load<SpriteFont>("DefaultFont");
     }
 
     protected override void Update(GameTime gameTime)
@@ -52,7 +59,21 @@ public class Game1 : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        // TODO: Add your update logic here
+        if (_waitingToRestart)
+        {
+            _restartTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+            if (_restartTimer <= 0)
+            {
+                _waitingToRestart = false;
+                _ballVelocity = new Vector2(
+                    4 * (Random.Shared.Next(0, 2) == 0 ? 1 : -1),
+                    4 * (Random.Shared.Next(0, 2) == 0 ? 1 : -1)
+                );
+            }
+            return;
+        }
+
+
         KeyboardState kState = Keyboard.GetState();
 
         //Movimentação do player 1 (W e S)
@@ -100,25 +121,59 @@ public class Game1 : Game
             _ballVelocity.Y *= -1;
 
         //Colisão com Raquetes
-        if (_ball.Intersects(_player1) || _ball.Intersects(_player2))
-            _ballVelocity.X *= -1;
-
-        //Reset da bola (fora da tela)
-        if (_ball.X <= 0 || _ball.X > _graphics.PreferredBackBufferWidth)
+        if (_ball.Intersects(_player1))
         {
-            _ball.X = 390;
-            _ball.Y = 240;
-            _ballVelocity = new Vector2(4, 4);
+            if (_ballVelocity.X < 0)
+            {
+                _ball.X = _player1.Right;
+                _ballVelocity.X *= -1;
+
+                float relativeY = (_ball.Center.Y - _player1.Center.Y);
+                _ballVelocity.Y = relativeY * 0.1f;
+            }
+        }
+
+        if (_ball.Intersects(_player2))
+        {
+            if (_ballVelocity.X > 0)
+            {
+                _ball.X = _player2.Left - _ball.Width;
+                _ballVelocity.X *= -1;
+
+                float relativeY = (_ball.Center.Y - _player2.Center.Y);
+                _ballVelocity.Y = relativeY * 0.1f;
+            }
+        }
+
+        if (_ball.X < 0)
+        {
+            _scorePlayer2++;
+            ResetBall();
+        }
+        else if (_ball.X > _graphics.PreferredBackBufferWidth)
+        {
+            _scorePlayer1++;
+            ResetBall();
         }
 
         base.Update(gameTime);
     }
 
+    private void ResetBall()
+    {
+        _ball.X = 390;
+        _ball.Y = 240;
+        _ballVelocity = Vector2.Zero;
+        _waitingToRestart = true;
+        _restartTimer = 1.0;
+    }
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.BlueViolet);
 
         _spriteBatch.Begin();
+        _spriteBatch.DrawString(_font, $"{_scorePlayer1}", new Vector2(100, 20), Color.White);
+        _spriteBatch.DrawString(_font, $"{_scorePlayer2}", new Vector2(600, 20), Color.White);
         _spriteBatch.Draw(_rectangleTexture, _player1, Color.White);
         _spriteBatch.Draw(_rectangleTexture, _player2, Color.White);
         _spriteBatch.Draw(_rectangleTexture, _ball, Color.White);
@@ -128,4 +183,5 @@ public class Game1 : Game
 
         base.Draw(gameTime);
     }
+
 }

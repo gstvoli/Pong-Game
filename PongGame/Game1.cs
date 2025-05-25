@@ -33,10 +33,21 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
-        _player1 = new Rectangle(50, 200, 20, 100);
-        _player2 = new Rectangle(730, 200, 20, 100);
-        _ball = new Rectangle(390, 240, 20, 20);
+        _graphics.PreferredBackBufferWidth = 1024;
+        _graphics.PreferredBackBufferHeight = 768;
+        _graphics.IsFullScreen = true;
+        _graphics.ApplyChanges();
+
+        int screenWidth = _graphics.PreferredBackBufferWidth;
+        int screenHeight = _graphics.PreferredBackBufferHeight;
+
+        int paddleWidth = 20;
+        int paddleHeight = 100;
+        int ballSize = 20;
+
+        _player1 = new Rectangle(50, (screenHeight - paddleHeight) / 2, paddleWidth, paddleHeight);
+        _player2 = new Rectangle(screenWidth - 50 - paddleWidth, (screenHeight - paddleHeight) / 2, paddleWidth, paddleHeight);
+        _ball = new Rectangle((screenWidth - ballSize) / 2, (screenHeight - ballSize) / 2, ballSize, ballSize);
         _ballVelocity = new Vector2(4, 4);
 
         base.Initialize();
@@ -45,8 +56,6 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-        // TODO: use this.Content to load your game content here
 
         // Criando uma textura branca 1x1 para desenhar retângulos
         _rectangleTexture = new Texture2D(GraphicsDevice, 1, 1);
@@ -159,21 +168,21 @@ public class Game1 : Game
         base.Update(gameTime);
     }
 
-    private void ResetBall()
-    {
-        _ball.X = 390;
-        _ball.Y = 240;
-        _ballVelocity = Vector2.Zero;
-        _waitingToRestart = true;
-        _restartTimer = 1.0;
-    }
     protected override void Draw(GameTime gameTime)
     {
+        int screenWidth = _graphics.PreferredBackBufferWidth;
+
+        string score1 = _scorePlayer1.ToString();
+        string score2 = _scorePlayer2.ToString();
+
+        Vector2 size1 = _font.MeasureString(score1);
+        Vector2 size2 = _font.MeasureString(score2);
+
         GraphicsDevice.Clear(Color.BlueViolet);
 
         _spriteBatch.Begin();
-        _spriteBatch.DrawString(_font, $"{_scorePlayer1}", new Vector2(100, 20), Color.White);
-        _spriteBatch.DrawString(_font, $"{_scorePlayer2}", new Vector2(600, 20), Color.White);
+        _spriteBatch.DrawString(_font, score1, new Vector2(100, 20), Color.White);
+        _spriteBatch.DrawString(_font, score2, new Vector2(screenWidth - 100 - size2.X, 20), Color.White);
         _spriteBatch.Draw(_rectangleTexture, _player1, Color.White);
         _spriteBatch.Draw(_rectangleTexture, _player2, Color.White);
         _spriteBatch.Draw(_rectangleTexture, _ball, Color.White);
@@ -183,5 +192,12 @@ public class Game1 : Game
 
         base.Draw(gameTime);
     }
-
+    private void ResetBall()
+    {
+        _ball.X = (_graphics.PreferredBackBufferWidth - _ball.Width) / 2;
+        _ball.Y = (_graphics.PreferredBackBufferHeight - _ball.Height) / 2;
+        _ballVelocity = Vector2.Zero;
+        _waitingToRestart = true;
+        _restartTimer = 1.0;
+    }
 }
